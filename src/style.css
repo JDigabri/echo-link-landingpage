@@ -1,0 +1,223 @@
+:root {
+  --bg: #ffffff;
+  --ink: #1b1f2a;
+  --blue: #54c2ff;
+  --blue-dark: #2f6f8c;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* Fixed 3D layer */
+#stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+#webgl {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Top nav */
+header.nav {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0)
+  );
+  backdrop-filter: blur(6px);
+}
+header.nav .logo {
+  font-size: 28px;
+  margin-left: 50px;
+}
+header.nav nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #444;
+  font-weight: 300;
+  font-family: Inter;
+}
+header.nav nav a.cta {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #eaf7ff;
+  border: 1px solid #bfe7ff;
+  margin-right: 50px;
+}
+
+/* Panels */
+.panel {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  padding: 96px 24px 48px;
+  z-index: 1; /* sits above canvas for text clickability, while canvas is pointer-events:none */
+}
+.panel--light {
+  background: #fff;
+}
+.panel--blue {
+  background: linear-gradient(135deg, #50bfff 0%, #2a86c4 100%);
+  color: #fff;
+}
+.panel--dark {
+  background: #0e1116;
+  color: #f2f5f9;
+  min-height: 120vh;
+}
+
+.content {
+  max-width: 580px;
+  margin-left: 50px;
+  font-family: Inter;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+.content h1 {
+  font-size: 58px;
+  font-family: Inter;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.content h2 {
+  font-size: 36px;
+  margin: 0 0 12px;
+}
+.content p {
+  opacity: 0.8;
+  line-height: 1.6;
+  font-size: 18px;
+}
+
+.content--center {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background-image: linear-gradient(to right, #1CACF1 , #1B57E2);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 32px;
+  font-weight: 300;
+  width: fit-content;
+  gap: 15px;
+  transition: all 200ms ;
+
+}
+
+.button:hover{
+
+  transform:scale(1.05);
+}
+
+/* Stats row */
+.stats {
+  list-style: none;
+  display: flex;
+  gap: 48px;
+  margin: 80px 0 24px 0;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+.stats .num {
+  display: block;
+  font-weight: 800;
+  font-size: 28px;
+}
+.stats .label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Decorative shapes similar to your mock */
+.shape {
+  position: absolute;
+  inset: auto;
+  z-index: 0;
+  border-radius: 24px;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.15));
+}
+/* The rounded container */
+
+/* The slanted fill */
+/* Tunables */
+.shape--one {
+  --r: 40px; /* corner radius */
+  --skew: -18deg; /* how slanted the left edge is (more negative = steeper) */
+  --shift: -12%; /* slide the skewed fill left/right to set the cut point */
+  --bg: rgba(31, 176, 243, 0.4); /* fill color */
+
+  position: absolute;
+  right: 76px;
+  top: 90px;
+  width: min(980px, 60vw);
+  height: min(780px, 40vw);
+
+  border-radius: var(--r); /* <- all corners rounded */
+  overflow: hidden; /* <- keeps the corners rounded */
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.15));
+  transform: rotate(180deg);
+}
+
+/* Skewed fill makes the diagonal left edge */
+.shape--one::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+
+  /* The magic: skew to create the diagonal, then shift it so the right edge stays straight */
+  transform: skewX(var(--skew)) translateX(var(--shift));
+
+  /* Keep this rounded so the diagonal’s endpoints look curved */
+  border-radius: var(--r);
+}
+
+.shape--two {
+  right: 0;
+  top: 0;
+  width: 80vw;
+  height: 80vh;
+  background: rgba(0, 0, 0, 0.15);
+  clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+}

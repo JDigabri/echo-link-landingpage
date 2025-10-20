@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EchoLink</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Fixed 3D canvas layer -->
+    <div id="stage">
+      <canvas id="webgl"></canvas>
+    </div>
+
+    <!-- Simple top nav (matches your mock) -->
+    <header class="nav">
+      <div class="logo">
+        <img src="./logo512.png" style="width: 50px; height: 50px" />
+      </div>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#inquire" class="cta">Inquire</a>
+      </nav>
+    </header>
+
+    <!-- Section 1 -->
+    <section id="home" class="panel panel--light">
+      <div class="content">
+        <h1>Meet EchoLink</h1>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation
+        </p>
+        <a class="button" href="#inquire">
+          
+<svg xmlns="http://www.w3.org/2000/svg" id="Outline" fill="white" viewBox="0 0 24 24" width="32" height="32"><path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/><path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"/><circle cx="12" cy="6.5" r="1.5"/></svg>
+
+          Inquire</a>
+      </div>
+      <div class="shape shape--one"></div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="about" class="panel panel--blue">
+      <ul class="stats">
+        <li>
+          <span class="num">25,000</span><span class="label">Weekly Calls</span>
+        </li>
+        <li>
+          <span class="num">10,000</span><span class="label">Active Users</span>
+        </li>
+        <li>
+          <span class="num">100,000</span
+          ><span class="label">Monthly Users</span>
+        </li>
+      </ul>
+
+      <div class="content">
+        <h2>About</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris…
+        </p>
+      </div>
+      <div class="shape shape--two"></div>
+    </section>
+
+    <!-- Section 3 (model gets BIG here) -->
+    <section id="inquire" class="panel panel--dark">
+      <div class="content content--center">
+        <h2>Let’s Talk</h2>
+        <p>
+          We’ll put a form here later. For now, enjoy the giant POS screen 😄
+        </p>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

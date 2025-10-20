@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>POS Screen</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000; /* not captured; iframe sits on top of this */
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    }
+
+    /* ---- CAPTURED AREA (must stay 1024x1024) ---- */
+    #screen-root {
+      width: 1024px;
+      height: 1024px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      padding: 64px;
+      color: #cfe9ff;
+
+      /* Background visible in your previous tests — keep it but subtle */
+      background: linear-gradient(135deg, #0b1220 0%, #1f6ee6 100%);
+    }
+    #screen-root * { box-sizing: inherit; }
+
+    /* Header / Title */
+    .title {
+      font-weight: 800;
+      font-size: 72px;
+      line-height: 1.05;
+      letter-spacing: 0.5px;
+      margin: 0 0 18px 0;
+      text-shadow: 0 2px 18px rgba(0,0,0,0.25);
+    }
+    .subtitle {
+      font-weight: 500;
+      font-size: 18px;
+      opacity: 0.8;
+      margin-bottom: 24px;
+    }
+
+    /* Status chips */
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .chip {
+      font-size: 16px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(2px);
+    }
+
+    /* Cards grid */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      margin-top: 6px;
+    }
+    .card {
+      background: rgba(6, 12, 20, 0.55);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px 18px;
+      min-height: 120px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(1200px 280px at -10% -20%, rgba(255,255,255,0.08), transparent 60%);
+      mix-blend-mode: screen;
+    }
+    .kpi-label {
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      opacity: 0.75;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .kpi-value {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: 0.3px;
+    }
+    .kpi-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* Animated ticker at bottom */
+    .ticker {
+      position: absolute;
+      left: 64px;
+      right: 64px;
+      bottom: 80px;
+      height: 12px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .bar {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 160px;
+      background: rgba(255,255,255,0.22);
+      animation: slide 6s linear infinite;
+      box-shadow: 0 0 24px rgba(255,255,255,0.25);
+    }
+    .bar:nth-child(2) { animation-delay: 0.8s; }
+    .bar:nth-child(3) { animation-delay: 1.6s; }
+    .bar:nth-child(4) { animation-delay: 2.4s; }
+    @keyframes slide {
+      from { transform: translateX(-220px); }
+      to   { transform: translateX(calc(100% + 220px)); }
+    }
+
+    /* Soft gloss overlay */
+    .gloss {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(1200px 400px at -10% -10%, rgba(255,255,255,0.14), transparent 55%),
+        linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.00) 35%);
+      mix-blend-mode: screen;
+    }
+
+    /* Footer row (time + badge) */
+    .footer {
+      position: absolute;
+      left: 64px;
+      right: 64px;
+      bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .badge {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+  </style>
+</head>
+<body>
+  <!-- IMPORTANT: this ID must match exactly; the Three.js code captures this element -->
+  <div id="screen-root" aria-label="POS Screen">
+    <h1 class="title">EchoLink</h1>
+    <div class="subtitle">Point-of-Sale • Live</div>
+    <div class="row">
+      <div class="chip" id="status-chip">Ready</div>
+      <div class="chip" id="clock-chip">00:00:00</div>
+      <div class="chip">Terminal A</div>
+    </div>
+
+    <section class="cards" aria-label="KPIs">
+      <article class="card">
+        <div class="kpi-label">Today’s Sales</div>
+        <div class="kpi-value" id="kpi-sales">$0.00</div>
+        <div class="kpi-sub" id="kpi-sales-sub">+0% vs yesterday</div>
+      </article>
+      <article class="card">
+        <div class="kpi-label">Transactions</div>
+        <div class="kpi-value" id="kpi-tx">0</div>
+        <div class="kpi-sub" id="kpi-tx-sub">avg $0.00 / order</div>
+      </article>
+      <article class="card">
+        <div class="kpi-label">Uptime</div>
+        <div class="kpi-value" id="kpi-uptime">100%</div>
+        <div class="kpi-sub">last incident: none</div>
+      </article>
+    </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+
+    <div class="gloss" aria-hidden="true"></div>
+
+    <div class="footer">
+      <div id="footer-time">—</div>
+      <div class="badge">Contactless Ready</div>
+    </div>
+  </div>
+
+  <script>
+    // Minimal, self-contained updates. Avoid external resources for reliability.
+
+    // Live clock
+    const clockChip = document.getElementById('clock-chip');
+    const footerTime = document.getElementById('footer-time');
+    function tickClock() {
+      const s = new Date().toLocaleTimeString();
+      if (clockChip) clockChip.textContent = s;
+      if (footerTime) footerTime.textContent = s;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    // Simple KPI demo updates (random-ish for visual movement)
+    const salesEl = document.getElementById('kpi-sales');
+    const salesSub = document.getElementById('kpi-sales-sub');
+    const txEl = document.getElementById('kpi-tx');
+    const txSub = document.getElementById('kpi-tx-sub');
+
+    let sales = 12450.25;
+    let tx = 182;
+
+    function updateKPIs() {
+      // Tiny jitter so html2canvas sees visible changes
+      sales += (Math.random() - 0.4) * 12.0;
+      tx += Math.random() > 0.6 ? 1 : 0;
+
+      const avg = sales / Math.max(1, tx);
+      const delta = (Math.random() - 0.5) * 2.0; // -1%..+1%
+
+      if (salesEl) salesEl.textContent = `$${sales.toFixed(2)}`;
+      if (salesSub) salesSub.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs yesterday`;
+      if (txEl) txEl.textContent = String(tx);
+      if (txSub) txSub.textContent = `avg $${avg.toFixed(2)} / order`;
+    }
+    updateKPIs();
+    setInterval(updateKPIs, 1500);
+
+    // Status chip pulse (purely visual)
+    const statusChip = document.getElementById('status-chip');
+    let on = true;
+    setInterval(() => {
+      on = !on;
+      if (statusChip) statusChip.textContent = on ? 'Ready' : 'Syncing…';
+    }, 5000);
+  </script>
+</body>
+</html>
