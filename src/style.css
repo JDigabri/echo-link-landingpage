@@ -25,7 +25,6 @@ body {
   overflow-x: hidden;
 }
 
-/* fixed 3D canvas */
 #stage {
   position: fixed;
   inset: 0;
@@ -38,7 +37,6 @@ body {
   display: block;
 }
 
-/* nav */
 header.nav {
   position: fixed;
   z-index: 10;
@@ -71,7 +69,6 @@ header.nav nav a.cta {
   margin-right: 50px;
 }
 
-/* hero panels */
 .panel {
   position: relative;
   height: min(100vh, 919px) !important;
@@ -82,17 +79,16 @@ header.nav nav a.cta {
   z-index: 1;
 }
 #home.panel {
-  /* stop full-viewport canvas from dictating width */
   overflow: hidden;
-  padding: 0;                 /* padding now lives on .hero-frame */
+  padding: 0;
   display: block;
 }
 .hero-frame {
   position: relative;
   width: min(100%, 1920px);
   height: min(100vh, 919px);
-  margin: 0 auto;             /* center the frame */
-  padding: 96px 24px 48px;    /* what #home used to have */
+  margin: 0 auto; 
+  padding: 96px 24px 48px; 
   display: flex;
   align-items: center;
   gap: 32px;
@@ -154,7 +150,6 @@ header.nav nav a.cta {
   justify-content: center;
 }
 
-/* ---------- Decorative hero shape (SVG silhouette, correctly clipped) ---------- */
 .shape {
   position: absolute;
   z-index: 0;
@@ -168,7 +163,7 @@ header.nav nav a.cta {
   top: 90px;
   width: min(1180px, 70%);
   aspect-ratio: 1294 / 804;
-  z-index: -1;                 /* behind text, in front of canvas */
+  z-index: -1;
 }
 
 .shape--one .shape-svg {
@@ -177,12 +172,10 @@ header.nav nav a.cta {
   height: 100%;
 }
 
-/* if you need it flipped like your earlier rotated version, add this helper */
 .shape--flip {
   transform: rotate(180deg);
 }
 
-/* responsive nudge (optional – mirrors your previous sizing tweaks) */
 @media (max-width: 1200px) {
   .shape--one {
     width: min(88vw, 780px);
@@ -197,10 +190,9 @@ header.nav nav a.cta {
 @media (max-width: 640px) {
   .shape--one {
     display: none;
-  } /* as you had before on tiny screens */
+  } 
 }
 
-/* wrappers */
 .wrap {
   max-width: var(--wrap);
   margin: 0 auto;
@@ -210,7 +202,6 @@ header.nav nav a.cta {
   padding: 72px 0;
 }
 
-/* features row */
 .features {
   list-style: none;
   display: grid;
@@ -238,13 +229,12 @@ header.nav nav a.cta {
   opacity: 0.85;
 }
 
-/* ---------------- Overlap card (EXACT BigCard look) ---------------- */
 
 .promo {
   position: relative;
   height: 0;
   z-index: 55;
-} /* remove from flow but keep stacking */
+} 
 .promo-card {
   position: absolute;
   left: 50%;
@@ -322,7 +312,6 @@ header.nav nav a.cta {
   border-radius: 20px 0 10px 0;
 }
 
-/* BigCard breakpoints */
 @media (max-width: 900px) {
   .promo-card {
     width: 90vw;
@@ -348,7 +337,7 @@ header.nav nav a.cta {
     height: 200%;
     background-image: url("/images/promo-shot.png");
     background-size: 120% 120%;
-    border-radius: 10px 0px 10px ;
+    border-radius: 10px 0px 10px;
   }
 }
 @media (max-width: 550px) {
@@ -360,13 +349,12 @@ header.nav nav a.cta {
   }
 }
 
-/* -------------- Band (EXACT MainSection look) -------------- */
 
 .band {
   position: relative;
   z-index: 9;
-  margin-top: 250px; /* leaves space, card overlaps visually */
-  min-height: 1100px; /* matches Vue height */
+  margin-top: 250px;
+  min-height: 1100px;
   background: linear-gradient(90deg, #347ca4 0%, #142f3e 101.03%);
   border: 1px solid transparent;
   overflow-x: hidden;
@@ -485,7 +473,6 @@ header.nav nav a.cta {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
-/* MainSection parity breakpoints */
 @media (max-width: 1265px) {
   .band-inner {
     grid-template-columns: 1fr;
@@ -507,7 +494,6 @@ header.nav nav a.cta {
 @media (max-width: 800px) {
   .band {
     min-height: 1700px;
-    
   }
   .band-copy {
     margin-top: 180px;
@@ -542,7 +528,6 @@ header.nav nav a.cta {
   }
 }
 
-/* demo placeholder */
 .demo {
   padding: 60px 0;
 }
@@ -553,7 +538,6 @@ header.nav nav a.cta {
   padding: 24px;
 }
 
-/* ---------- Contact layout ---------- */
 #contact.wrap.contact {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -563,7 +547,6 @@ header.nav nav a.cta {
   padding-bottom: 75px;
 }
 
-/* Left column */
 .contact-left h2 {
   margin: 0 0 8px;
   font: 400 40px/1.15 Inter, system-ui, -apple-system, Segoe UI, Roboto,
@@ -576,7 +559,6 @@ header.nav nav a.cta {
   color: rgba(0, 0, 0, 0.7);
 }
 
-/* Grid list of contact items */
 .contact-list {
   list-style: none;
   margin: 0;
@@ -596,7 +578,6 @@ header.nav nav a.cta {
   color: rgba(0, 0, 0, 0.55);
 }
 
-/* ✨ Inria Serif ONLY for the actual contact info values */
 .contact-list strong,
 .contact-list a.contact-value {
   display: inline-block;
@@ -611,15 +592,12 @@ header.nav nav a.cta {
   text-decoration: none;
 }
 
-.contact-list li{
-  
+.contact-list li {
   box-shadow: -5px 3px 10px rgba(0, 0, 0, 0.1);
   border-radius: 25px;
   padding: 20px;
-
 }
 
-/* ---------- Right column (form) ---------- */
 .contact-card {
   border-radius: 16px;
   background: linear-gradient(180deg, #1cacf1 0%, #1b57e2 100%);
@@ -661,14 +639,12 @@ header.nav nav a.cta {
   box-shadow: inset 0 0 0 2px #347ca4, 0 0 0 3px rgba(52, 124, 164, 0.25);
 }
 
-/* Two-up row for first/last name */
 .contact-card .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-/* Checkbox row */
 .contact-card .agree {
   display: flex;
   align-items: center;
@@ -681,7 +657,6 @@ header.nav nav a.cta {
   height: 16px;
 }
 
-/* Gradient button (347CA4 → 142F3E) — from previous step, kept here for completeness */
 .contact-card .button {
   display: flex;
   align-items: center;
@@ -714,9 +689,7 @@ header.nav nav a.cta {
     0 6px 18px rgba(20, 47, 62, 0.25);
 }
 
-/* ---------- Responsiveness ---------- */
 
-/* Tablet: stack columns, keep comfy sizing */
 @media (max-width: 1024px) {
   #contact.wrap.contact {
     grid-template-columns: 1fr;
@@ -734,7 +707,6 @@ header.nav nav a.cta {
   }
 }
 
-/* Phone: single-column list, single-column name row, tighter fonts */
 @media (max-width: 640px) {
   .contact-left h2 {
     font-size: 24px;
@@ -750,7 +722,7 @@ header.nav nav a.cta {
   .contact-list strong,
   .contact-list a.contact-value {
     font-size: 15px;
-  } /* make the important info stand out */
+  } 
 
   .contact-card {
     padding: 16px;
@@ -769,7 +741,6 @@ header.nav nav a.cta {
   }
 }
 
-/* Very small phones */
 @media (max-width: 380px) {
   .contact-left h2 {
     font-size: 22px;
@@ -778,8 +749,6 @@ header.nav nav a.cta {
     padding: 14px;
   }
 }
-
-/* ---------- responsive ---------- */
 
 @media (max-width: 980px) {
   header.nav {
@@ -808,7 +777,6 @@ header.nav nav a.cta {
     font-size: 16px;
   }
 
-
   .features {
     grid-template-columns: 1fr 1fr;
   }
@@ -836,7 +804,7 @@ header.nav nav a.cta {
   .panel {
     padding: 84px 14px 52px;
   }
-  
+
   #home.panel {
     padding-top: 15vh;
     align-items: center;
@@ -845,7 +813,6 @@ header.nav nav a.cta {
     grid-template-columns: 1fr;
   }
 }
-
 
 @media (orientation: landscape) and (max-height: 840px) {
   #home.panel {
@@ -891,10 +858,9 @@ header.nav nav a.cta {
   }
 }
 
-/* ===== Features / Pods ===== */
 #features {
   position: relative;
-  z-index: 2; /* above the fixed webgl layer */
+  z-index: 2;
 }
 
 #features .podcont {
@@ -925,11 +891,11 @@ header.nav nav a.cta {
 }
 
 #features .pod {
-  flex-direction: row-reverse; /* image right, text left */
+  flex-direction: row-reverse;  
   text-align: right;
 }
 #features .podr {
-  flex-direction: row; /* image left, text right */
+  flex-direction: row;
   text-align: left;
 }
 
@@ -976,7 +942,6 @@ header.nav nav a.cta {
   margin: 0;
 }
 
-/* --- responsive --- */
 @media (max-width: 1000px) {
   #features .pod-content {
     width: 250px;
@@ -1019,54 +984,68 @@ header.nav nav a.cta {
   }
 }
 
-/* ============ shared container ============ */
 .wrap {
   width: min(1200px, calc(100% - 32px));
   margin-inline: auto;
 }
 
-
-/* make content a positioning context */
 #home .content {
   position: relative;
   z-index: 3;
-  max-width: 420px;           /* tweak as you like */
+  max-width: 420px; 
   margin-left: 50px;
 }
 
-/* --- Screen selector aligned with hero text --- */
 .screen-selector {
   position: absolute;
   right: calc(-52vw - 200px);
-  top: 0xp;                  /* align with hero padding */
+  top: 0xp;
   z-index: 4;
 }
 
-.screen-card { width: 230px; padding: 14px; border-radius: 14px;
-  background:#fff; box-shadow:0 12px 28px rgba(0,0,0,.15); }
+.screen-card {
+  width: 230px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
 
-.screen-item{
+.screen-item {
   width: 100%;
-  display:flex; align-items:center; gap:10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
-  border:0; background: transparent;
+  border: 0;
+  background: transparent;
   border-radius: 10px;
   font: 500 14px/1.2 Inter, system-ui, sans-serif;
-  color:#2b2f3a;
-  cursor:pointer;
-  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+  color: #2b2f3a;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.screen-item + .screen-item{ margin-top: 6px; }
-.screen-item:hover{ background: rgba(28,172,241,.08); }
-.screen-item svg{ width:18px; height:18px; opacity:.8; }
-.screen-item.is-active{
-  background: linear-gradient(90deg, #1CACF1, #1B57E2);
-  color:#fff;
-  box-shadow: 0 6px 14px rgba(27,87,226,.25);
+.screen-item + .screen-item {
+  margin-top: 6px;
 }
-.screen-item.is-active svg{ filter:brightness(0) invert(1); opacity:1; }
+.screen-item:hover {
+  background: rgba(28, 172, 241, 0.08);
+}
+.screen-item svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+}
+.screen-item.is-active {
+  background: linear-gradient(90deg, #1cacf1, #1b57e2);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(27, 87, 226, 0.25);
+}
+.screen-item.is-active svg {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
 
-/* ---- vertical layout breakpoint: stack under hero (NOT bottom-right) ---- */
 @media (max-width: 1500px) {
   .hero-frame {
     flex-direction: column;
@@ -1076,7 +1055,7 @@ header.nav nav a.cta {
     gap: 18px;
   }
   .screen-selector {
-    position: static;          /* becomes part of the flow */
+    position: static;
     margin-top: 6px;
     align-self: center;
     display: none;
@@ -1092,6 +1071,3 @@ header.nav nav a.cta {
     width: min(88vw, 780px);
   }
 }
-
-
-

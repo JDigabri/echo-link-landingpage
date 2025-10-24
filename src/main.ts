@@ -8,19 +8,16 @@ import { initPromoAndBand } from "./promo-band-anim";
 const GLB_URL = "/models/possystem4.glb";
 const SCREEN_MAT_NAME = "material.003";
 
-// Screens to preview inside the 3D device
 const SCREENS = [
-  { label: "POS Home", src: "/screen.html" },              // existing
+  { label: "POS Home", src: "/screen.html" },              
   { label: "Analytics", src: "/screens/screen-analytics.html" },
   { label: "Tiles",     src: "/screens/screen-tiles.html" },
 ];
 
-// --- mount the canvas INSIDE the hero so it doesn't follow on scroll ---
 const hero  = document.getElementById("home") as HTMLElement;
 const stage = document.getElementById("stage") as HTMLDivElement;
 const canvas = document.getElementById("webgl") as HTMLCanvasElement;
 if (hero && stage && stage.parentElement !== hero) hero.appendChild(stage);
-// override any fixed CSS for #stage
 Object.assign(stage.style, {
   position: "absolute",
   inset: "0",
@@ -28,7 +25,6 @@ Object.assign(stage.style, {
   pointerEvents: "none",
 });
 
-// --- renderer / scene / camera ---
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -46,10 +42,8 @@ camera.lookAt(new THREE.Vector3(0, 0.7, 0));
 
 const heroFrame = document.querySelector("#home .hero-frame") as HTMLElement;
 
-// move stage under the frame if it's not there already
 if (heroFrame && stage && stage.parentElement !== heroFrame) heroFrame.appendChild(stage);
 
-// absolute inside frame (mirrors CSS)
 Object.assign(stage.style, {
   position: "absolute",
   inset: "0",
@@ -57,7 +51,6 @@ Object.assign(stage.style, {
   pointerEvents: "none",
 });
 
-// size renderer to hero FRAME (capped at 1920 via CSS)
 function sizeToHero() {
   const r = heroFrame.getBoundingClientRect();
   const w = Math.max(1, Math.round(r.width));
@@ -73,7 +66,6 @@ new ResizeObserver(sizeToHero).observe(heroFrame);
 window.addEventListener("orientationchange", () => setTimeout(sizeToHero, 50));
 window.addEventListener("resize", sizeToHero);
 
-// subtle cursor tilt (only for hero)
 const mouse = new THREE.Vector2(0, 0);
 const targetMouse = new THREE.Vector2(0, 0);
 const MAX_YAW = THREE.MathUtils.degToRad(4);
@@ -241,9 +233,8 @@ function iconSVG(kind: "grid"|"phone"|"book"|"default" = "default"){
   }
 }
 
-// change host in mountScreenPicker()
 function mountScreenPicker() {
-  const host = document.querySelector<HTMLElement>("#home .content"); // <-- was hero
+  const host = document.querySelector<HTMLElement>("#home .content"); 
   if (!host) return;
 
   const selector = document.createElement("div");
@@ -332,11 +323,9 @@ function setUVsForMaterialGroupAndGetAspect(geom: THREE.BufferGeometry, material
   return aspect;
 }
 
-// rig (hero only)
 const rig = new THREE.Group();
 scene.add(rig);
 
-// responsive fit (handles short-height landscapes)
 const TMP = new THREE.Vector3();
 let baseRadius = 1;
 function coverFraction(): number {
@@ -418,7 +407,6 @@ function applyHTMLTextureToScreen(root: THREE.Object3D) {
   });
 }
 
-// load GLB (hero only)
 const gltfLoader = new GLTFLoader();
 gltfLoader.load(
   GLB_URL,
@@ -470,13 +458,12 @@ const poses: Record<Mode, Pose> = {
   "phone-port": { pos: new THREE.Vector3(0,.3,2.9),      rot: new THREE.Euler(0,0,0),     scale: 1.4,  lightPos: new THREE.Vector3(-0.9,5.0,2.6), shadowOpacity:.12, shadowRadius:4 },
 };
 
-// Mobile/stacked behavior under 1500px
 function getMode(): Mode {
   const w = window.innerWidth;
   const portrait = window.matchMedia("(orientation: portrait)").matches;
 
   if (w >= 1500) return "desktop-xl";
-  if (w >= 1100) return "tablet";                 // earlier “stack” kick-in
+  if (w >= 1100) return "tablet";             
   if (w >= 641)  return portrait ? "phone-port" : "tablet";
   return portrait ? "phone-port" : "phone-land";
 }

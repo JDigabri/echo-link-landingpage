@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Fixed 3D canvas -->
 
-    <!-- Top nav -->
     <header class="nav">
       <div class="logo">
         <img src="./logo512.png" width="50" height="50" alt="EchoLink" />
@@ -21,10 +19,9 @@
       </nav>
     </header>
 
-    <!-- HERO (3D) -->
     <section id="home" class="panel panel--light">
       <div class="hero-frame">
-    <div id="stage"><canvas id="webgl"></canvas></div>
+        <div id="stage"><canvas id="webgl"></canvas></div>
 
         <div class="content">
           <h1>Meet EchoLink</h1>
@@ -226,7 +223,6 @@
       </div>
     </section>
 
-    <!-- CONTACT (2D) -->
     <section id="contact" class="wrap contact">
       <div class="contact-left">
         <h2>Get Started</h2>
@@ -291,7 +287,6 @@
       </form>
     </section>
 
-    <!-- end of the 3D area sentinel -->
     <div id="after-3d"></div>
 
     <script type="module" src="/src/main.ts"></script>
