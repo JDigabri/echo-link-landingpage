@@ -2,42 +2,93 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { initFeaturePods } from "./features-anim";
+import { initPromoAndBand } from "./promo-band-anim";
 
-// === Config you might change ===
 const GLB_URL = "/models/possystem4.glb";
-const SCREEN_MAT_NAME = "material.003"; // case-insensitive
+const SCREEN_MAT_NAME = "material.003";
 
-// ---------- renderer / scene / camera ----------
+// Screens to preview inside the 3D device
+const SCREENS = [
+  { label: "POS Home", src: "/screen.html" },              // existing
+  { label: "Analytics", src: "/screens/screen-analytics.html" },
+  { label: "Tiles",     src: "/screens/screen-tiles.html" },
+];
+
+// --- mount the canvas INSIDE the hero so it doesn't follow on scroll ---
+const hero  = document.getElementById("home") as HTMLElement;
+const stage = document.getElementById("stage") as HTMLDivElement;
 const canvas = document.getElementById("webgl") as HTMLCanvasElement;
+if (hero && stage && stage.parentElement !== hero) hero.appendChild(stage);
+// override any fixed CSS for #stage
+Object.assign(stage.style, {
+  position: "absolute",
+  inset: "0",
+  zIndex: "0",
+  pointerEvents: "none",
+});
+
+// --- renderer / scene / camera ---
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-// @ts-ignore (older three versions)
+// @ts-ignore
 renderer.physicallyCorrectLights = true;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
 camera.position.set(0, 1.2, 6);
 camera.lookAt(new THREE.Vector3(0, 0.7, 0));
 
-// Cursor tilt
+const heroFrame = document.querySelector("#home .hero-frame") as HTMLElement;
+
+// move stage under the frame if it's not there already
+if (heroFrame && stage && stage.parentElement !== heroFrame) heroFrame.appendChild(stage);
+
+// absolute inside frame (mirrors CSS)
+Object.assign(stage.style, {
+  position: "absolute",
+  inset: "0",
+  zIndex: "0",
+  pointerEvents: "none",
+});
+
+// size renderer to hero FRAME (capped at 1920 via CSS)
+function sizeToHero() {
+  const r = heroFrame.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width));
+  const h = Math.max(1, Math.round(r.height));
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+}
+sizeToHero();
+new ResizeObserver(sizeToHero).observe(heroFrame);
+window.addEventListener("orientationchange", () => setTimeout(sizeToHero, 50));
+window.addEventListener("resize", sizeToHero);
+
+// subtle cursor tilt (only for hero)
 const mouse = new THREE.Vector2(0, 0);
 const targetMouse = new THREE.Vector2(0, 0);
-const MAX_YAW   = THREE.MathUtils.degToRad(4);
+const MAX_YAW = THREE.MathUtils.degToRad(4);
 const MAX_PITCH = THREE.MathUtils.degToRad(0);
 const TILT_EASE = 0.2;
 window.addEventListener("pointermove", (e) => {
-  targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  targetMouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+  const r = heroFrame.getBoundingClientRect();
+  if (r.bottom <= 0 || r.top >= window.innerHeight) return targetMouse.set(0, 0);
+  const nx = (e.clientX - r.left) / Math.max(1, r.width);
+  const ny = (e.clientY - r.top) / Math.max(1, r.height);
+  targetMouse.set(nx * 2 - 1, ny * 2 - 1);
 });
-["pointerleave","blur"].forEach(evt => window.addEventListener(evt, () => targetMouse.set(0,0)));
+["pointerleave", "blur"].forEach((evt) => window.addEventListener(evt, () => targetMouse.set(0, 0)));
 
-// ---------- environment & lights ----------
+// env + lights + ground
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -61,47 +112,43 @@ ground.position.y = -0.2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// ---------- HTML → Canvas → Texture (in-iframe html2canvas) ----------
-let TEX_W = 1024, TEX_H = 1024; // will be updated to match the screen aspect
-
+/* ---------- HTML → canvas → texture for the device screen ---------- */
+let TEX_W = 1024, TEX_H = 1024;
 function makeScreenCanvas() {
-  let c = document.getElementById('screenCanvas') as HTMLCanvasElement | null;
+  let c = document.getElementById("screenCanvas") as HTMLCanvasElement | null;
   if (!c) {
-    c = document.createElement('canvas');
-    c.id = 'screenCanvas';
+    c = document.createElement("canvas");
+    c.id = "screenCanvas";
     c.width = TEX_W; c.height = TEX_H;
-    c.style.display = 'none';
+    c.style.display = "none";
     document.body.appendChild(c);
   }
   return c;
 }
 const screenCanvas = makeScreenCanvas();
-const screenCtx = screenCanvas.getContext('2d')!;
-
+const screenCtx = screenCanvas.getContext("2d")!;
 const screenTex = new THREE.CanvasTexture(screenCanvas);
 screenTex.wrapS = THREE.ClampToEdgeWrapping;
 screenTex.wrapT = THREE.ClampToEdgeWrapping;
 screenTex.colorSpace = THREE.SRGBColorSpace;
 screenTex.flipY = false;
-// NPOT safe defaults:
 screenTex.generateMipmaps = false;
 screenTex.minFilter = THREE.LinearFilter;
 screenTex.magFilter = THREE.LinearFilter;
 screenTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-// Hidden iframe that renders the UI we capture
-const screenFrame = document.createElement('iframe');
-screenFrame.src = '/screen.html';
+const screenFrame = document.createElement("iframe");
+screenFrame.src = SCREENS[0].src;
 Object.assign(screenFrame.style, {
-  position: 'fixed',
-  left: '0px',
-  top: '0px',
+  position: "fixed",
+  left: "0px",
+  top: "0px",
   width: `${TEX_W}px`,
   height: `${TEX_H}px`,
-  opacity: '0',
-  pointerEvents: 'none',
-  border: '0',
-  zIndex: '-1'
+  opacity: "0",
+  pointerEvents: "none",
+  border: "0",
+  zIndex: "-1",
 } as CSSStyleDeclaration);
 document.body.appendChild(screenFrame);
 
@@ -109,209 +156,220 @@ let screenRoot: HTMLElement | null = null;
 let h2c: any = null;
 let capturing = false;
 let lastCapture = 0;
+let screenObserver: MutationObserver | null = null;
 const SCREEN_FPS = 30;
 
 async function waitFonts(doc: Document) {
-  try {
-    // @ts-ignore
-    if (doc?.fonts?.ready) await (doc as any).fonts.ready;
-  } catch {}
+  try { if ((doc as any)?.fonts?.ready) await (doc as any).fonts.ready; } catch {}
 }
-
 async function injectHtml2Canvas(doc: Document) {
   if ((screenFrame.contentWindow as any)?.html2canvas) {
     h2c = (screenFrame.contentWindow as any).html2canvas;
     return;
   }
   await new Promise<void>((resolve, reject) => {
-    const s = doc.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    const s = doc.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error('html2canvas failed to load'));
+    s.onerror = () => reject(new Error("html2canvas failed to load"));
     doc.head.appendChild(s);
   });
   h2c = (screenFrame.contentWindow as any).html2canvas;
 }
-
-// Resize capture pipeline to match screen aspect
 function resizeScreenCaptureToAspect(aspect: number) {
   TEX_H = 1024;
   TEX_W = Math.max(2, Math.round(TEX_H * aspect));
-
-  // canvas
-  screenCanvas.width  = TEX_W;
-  screenCanvas.height = TEX_H;
-
-  // iframe box + html root
-  screenFrame.style.width  = `${TEX_W}px`;
+  screenCanvas.width = TEX_W; screenCanvas.height = TEX_H;
+  screenFrame.style.width = `${TEX_W}px`;
   screenFrame.style.height = `${TEX_H}px`;
   if (screenRoot) {
-    (screenRoot as HTMLElement).style.width  = `${TEX_W}px`;
+    (screenRoot as HTMLElement).style.width = `${TEX_W}px`;
     (screenRoot as HTMLElement).style.height = `${TEX_H}px`;
   }
-
-  // NPOT-safe sampling (already set above, but re-affirm)
   screenTex.generateMipmaps = false;
   screenTex.minFilter = THREE.LinearFilter;
   screenTex.magFilter = THREE.LinearFilter;
   screenTex.needsUpdate = true;
 }
-
 async function captureHTMLToCanvas() {
   if (!screenRoot || !h2c || capturing) return;
   capturing = true;
   try {
     const snap = await h2c(screenRoot, {
-      backgroundColor: null,
-      useCORS: true,
-      foreignObjectRendering: true,
-      width: TEX_W,
-      height: TEX_H,
-      windowWidth: TEX_W,
-      windowHeight: TEX_H,
-      scale: 1,
-      logging: false
+      backgroundColor: null, useCORS: true, foreignObjectRendering: true,
+      width: TEX_W, height: TEX_H, windowWidth: TEX_W, windowHeight: TEX_H, scale: 1, logging: false,
     });
     screenCtx.clearRect(0, 0, TEX_W, TEX_H);
     screenCtx.drawImage(snap, 0, 0, TEX_W, TEX_H);
     screenTex.needsUpdate = true;
   } catch (e) {
-    console.warn('[html2canvas] snapshot failed:', e);
-  } finally {
-    capturing = false;
+    console.warn("[html2canvas] snapshot failed:", e);
+  } finally { capturing = false; }
+}
+function setScreenSrc(src: string) {
+  if (screenObserver) { screenObserver.disconnect(); screenObserver = null; }
+  screenRoot = null;
+  h2c = null;
+  capturing = false;
+  lastCapture = 0;
+  screenFrame.src = src;
+}
+screenFrame.addEventListener("load", async () => {
+  if (screenObserver) { screenObserver.disconnect(); screenObserver = null; }
+  const doc = screenFrame.contentDocument!;
+  screenRoot = doc.getElementById("screen-root");
+  if (!screenRoot) { console.warn("screen page missing #screen-root"); return; }
+  (screenRoot as HTMLElement).style.width  = `${TEX_W}px`;
+  (screenRoot as HTMLElement).style.height = `${TEX_H}px`;
+  await injectHtml2Canvas(doc);
+  await waitFonts(doc);
+  await new Promise((r) => requestAnimationFrame(r));
+  await new Promise((r) => setTimeout(r, 50));
+  await captureHTMLToCanvas();
+  const Observer = (screenFrame.contentWindow as any).MutationObserver || MutationObserver;
+  screenObserver = new Observer(() => captureHTMLToCanvas());
+  screenObserver?.observe(screenRoot, { attributes: true, childList: true, characterData: true, subtree: true });
+});
+
+function iconSVG(kind: "grid"|"phone"|"book"|"default" = "default"){
+  const common = 'width="18" height="18" viewBox="0 0 24 24" fill="currentColor"';
+  switch (kind) {
+    case "grid": return `<svg ${common}><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>`;
+    case "phone":return `<svg ${common}><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.11.37 2.3.57 3.58.57a1 1 0 011 1V21a1 1 0 01-1 1C10.3 22 2 13.7 2 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.28.2 2.47.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z"/></svg>`;
+    case "book": return `<svg ${common}><path d="M4 4a2 2 0 012-2h12a2 2 0 012 2v15a1 1 0 01-1.447.894L16 18.118l-3.553 1.776A1 1 0 0111 19V4H6a2 2 0 00-2 2v13a1 1 0 11-2 0V6a2 2 0 012-2z"/></svg>`;
+    default:     return `<svg ${common}><circle cx="12" cy="12" r="9"/></svg>`;
   }
 }
 
-screenFrame.addEventListener('load', async () => {
-  const doc = screenFrame.contentDocument!;
-  screenRoot = doc.getElementById('screen-root');
-  if (!screenRoot) {
-    console.warn('screen.html missing #screen-root');
-    return;
-  }
-  (screenRoot as HTMLElement).style.width = `${TEX_W}px`;
-  (screenRoot as HTMLElement).style.height = `${TEX_H}px`;
+// change host in mountScreenPicker()
+function mountScreenPicker() {
+  const host = document.querySelector<HTMLElement>("#home .content"); // <-- was hero
+  if (!host) return;
 
-  await injectHtml2Canvas(doc);
-  await waitFonts(doc);
-  await new Promise(r => requestAnimationFrame(r));
-  await new Promise(r => setTimeout(r, 50));
-  await captureHTMLToCanvas();
+  const selector = document.createElement("div");
+  selector.className = "screen-selector";
 
-  const Observer = (screenFrame.contentWindow as any).MutationObserver || MutationObserver;
-  const mo = new Observer(() => captureHTMLToCanvas());
-  mo.observe(screenRoot, { attributes:true, childList:true, characterData:true, subtree:true });
+  const card = document.createElement("div");
+  card.className = "screen-card";
 
-  screenFrame.contentWindow?.addEventListener('resize', () => captureHTMLToCanvas());
-});
+  SCREENS.forEach((s, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "screen-item" + (i === 0 ? " is-active" : "");
+    const icon = i === 0 ? "grid" : i === 1 ? "phone" : i === 2 ? "book" : "default";
+    btn.innerHTML = `${iconSVG(icon as any)}<span>${s.label}</span>`;
+    btn.addEventListener("click", () => {
+      card.querySelectorAll(".screen-item").forEach(el => el.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      setScreenSrc(s.src);
+    });
+    card.appendChild(btn);
+  });
 
-// ---------- UVs for a specific material group + aspect ----------
-function setUVsForMaterialGroupAndGetAspect(
-  geom: THREE.BufferGeometry,
-  materialIndex: number
-): number {
-  const pos = geom.getAttribute('position') as THREE.BufferAttribute | undefined;
+  selector.appendChild(card);
+  host.appendChild(selector);
+}
+
+
+mountScreenPicker();
+
+/* ---------- UVs for screen sub-material ---------- */
+function setUVsForMaterialGroupAndGetAspect(geom: THREE.BufferGeometry, materialIndex: number): number {
+  const pos = geom.getAttribute("position") as THREE.BufferAttribute | undefined;
   if (!pos) return 1;
-
   const indexAttr = geom.getIndex() as THREE.BufferAttribute | null;
   const idxArray = indexAttr ? (indexAttr.array as ArrayLike<number>) : null;
-
-  const groups = geom.groups?.length
-    ? geom.groups
-    : [{ start: 0, count: (idxArray ? idxArray.length : pos.count), materialIndex: 0 }];
-
-  const group = groups.find(g => g.materialIndex === materialIndex) ?? groups[0];
-  const start = group.start;
-  const end = group.start + group.count;
+  const groups = geom.groups?.length ? geom.groups : [{ start: 0, count: (idxArray ? idxArray.length : pos.count), materialIndex: 0 }];
+  const group = groups.find((g) => g.materialIndex === materialIndex) ?? groups[0];
+  const start = group.start, end = group.start + group.count;
 
   const used = new Set<number>();
   const v0 = new THREE.Vector3(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3();
   const e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), n = new THREE.Vector3(), nSum = new THREE.Vector3();
-
-  const min = new THREE.Vector3( Infinity,  Infinity,  Infinity);
-  const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-
+  const min = new THREE.Vector3(Infinity, Infinity, Infinity), max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
   const getIndex = (i: number) => (idxArray ? idxArray[i] : i);
 
   for (let i = start; i < end; i += 3) {
-    const ia = getIndex(i), ib = getIndex(i+1), ic = getIndex(i+2);
+    const ia = getIndex(i), ib = getIndex(i + 1), ic = getIndex(i + 2);
     used.add(ia); used.add(ib); used.add(ic);
-
     v0.set(pos.getX(ia), pos.getY(ia), pos.getZ(ia));
     v1.set(pos.getX(ib), pos.getY(ib), pos.getZ(ib));
     v2.set(pos.getX(ic), pos.getY(ic), pos.getZ(ic));
-
     min.min(v0); min.min(v1); min.min(v2);
     max.max(v0); max.max(v1); max.max(v2);
-
-    e1.subVectors(v1, v0);
-    e2.subVectors(v2, v0);
-    n.crossVectors(e1, e2);
-    nSum.add(n);
+    e1.subVectors(v1, v0); e2.subVectors(v2, v0); n.crossVectors(e1, e2); nSum.add(n);
   }
 
-  // choose projection plane
-  let uAxis: 'x'|'y'|'z', vAxis: 'x'|'y'|'z';
+  let uAxis: "x" | "y" | "z", vAxis: "x" | "y" | "z";
   if (nSum.lengthSq() > 1e-12) {
     nSum.normalize();
     const ax = Math.abs(nSum.x), ay = Math.abs(nSum.y), az = Math.abs(nSum.z);
-    if (ax >= ay && ax >= az) { uAxis = 'y'; vAxis = 'z'; }
-    else if (ay >= ax && ay >= az) { uAxis = 'x'; vAxis = 'z'; }
-    else { uAxis = 'x'; vAxis = 'y'; }
+    if (ax >= ay && ax >= az) { uAxis = "y"; vAxis = "z"; }
+    else if (ay >= ax && ay >= az) { uAxis = "x"; vAxis = "z"; }
+    else { uAxis = "x"; vAxis = "y"; }
   } else {
     const span = new THREE.Vector3().subVectors(max, min);
-    const entries = [
-      {ax:'x' as const, v: span.x},
-      {ax:'y' as const, v: span.y},
-      {ax:'z' as const, v: span.z},
-    ].sort((a,b)=>b.v - a.v);
+    const entries = [{ ax: "x" as const, v: span.x }, { ax: "y" as const, v: span.y }, { ax: "z" as const, v: span.z }].sort((a, b) => b.v - a.v);
     uAxis = entries[0].ax; vAxis = entries[1].ax;
   }
-
   const uMin = (min as any)[uAxis], vMin = (min as any)[vAxis];
   const uSpan = Math.max(1e-6, (max as any)[uAxis] - uMin);
   const vSpan = Math.max(1e-6, (max as any)[vAxis] - vMin);
   const aspect = uSpan / vSpan;
 
-  if (!geom.getAttribute('uv')) {
-    geom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(pos.count * 2), 2));
-  }
-  const uv = geom.getAttribute('uv') as THREE.BufferAttribute;
+  if (!geom.getAttribute("uv")) geom.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(pos.count * 2), 2));
+  const uv = geom.getAttribute("uv") as THREE.BufferAttribute;
 
   used.forEach((vi) => {
     const x = pos.getX(vi), y = pos.getY(vi), z = pos.getZ(vi);
-    const obj: Record<'x'|'y'|'z', number> = {x,y,z};
+    const obj: Record<"x" | "y" | "z", number> = { x, y, z };
     const U = (obj[uAxis] - uMin) / uSpan;
     const V = 1 - (obj[vAxis] - vMin) / vSpan;
     uv.setXY(vi, U, V);
   });
   uv.needsUpdate = true;
-  geom.attributes.uv.needsUpdate = true;
-
+  (geom.attributes as any).uv.needsUpdate = true;
   return aspect;
 }
 
-// ---------- rig ----------
+// rig (hero only)
 const rig = new THREE.Group();
 scene.add(rig);
 
-// ---------- Loader overlay ----------
+// responsive fit (handles short-height landscapes)
+const TMP = new THREE.Vector3();
+let baseRadius = 1;
+function coverFraction(): number {
+  const w = window.innerWidth, h = window.innerHeight;
+  let base = 0.42;
+  if (w >= 1350) base = 0.56;
+  else if (w >= 981) base = 0.50;
+  else if (w >= 641) base = 0.46;
+  const heightFactor = THREE.MathUtils.clamp(h / 800, 0.58, 1.0);
+  return base * heightFactor;
+}
+function responsiveScale(): number {
+  const rigWorld = rig.getWorldPosition(TMP);
+  const d = camera.position.distanceTo(rigWorld);
+  const fov = (camera.fov * Math.PI) / 180;
+  const s = (coverFraction() * d * Math.tan(fov / 2)) / baseRadius;
+  return THREE.MathUtils.clamp(s, 0.32, 3.0);
+}
+
+// simple loader
 function makeLoader() {
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
-  #page-loader{position:fixed; inset:0; background:#0b0f14; color:#cfe9ff;
-  display:flex; align-items:center; justify-content:center; z-index:9999;
-  transition:opacity .35s ease; opacity:1;}
-  #page-loader.hidden{ opacity:0; pointer-events:none; }
-  .loader-box{ width:min(420px,80vw); text-align:center; }
-  .loader-title{ font:600 18px/1.2 system-ui, Inter, Segoe UI, sans-serif; margin-bottom:14px; }
-  .loader-bar{ height:6px; width:100%; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
-  .loader-fill{ height:100%; width:0%; background:#50bfff; border-radius:999px; transition:width .12s linear; }
-  .loader-sub{ font:400 12px/1.2 system-ui, Inter, Segoe UI, sans-serif; opacity:.7; margin-top:10px; }
-  `;
+  #page-loader{position:fixed;inset:0;background:#0b0f14;color:#cfe9ff;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .35s;opacity:1}
+  #page-loader.hidden{opacity:0;pointer-events:none}
+  .loader-box{width:min(420px,80vw);text-align:center}
+  .loader-title{font:600 18px/1.2 system-ui,Inter,Segoe UI,sans-serif;margin-bottom:14px}
+  .loader-bar{height:6px;width:100%;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}
+  .loader-fill{height:100%;width:0%;background:#50bfff;border-radius:999px;transition:width .12s linear}
+  .loader-sub{font:400 12px/1.2 system-ui,Inter,Segoe UI,sans-serif;opacity:.7;margin-top:10px}`;
   document.head.appendChild(style);
-  const root = document.createElement('div');
-  root.id = 'page-loader';
+  const root = document.createElement("div");
+  root.id = "page-loader";
   root.innerHTML = `
     <div class="loader-box">
       <div class="loader-title">Loading 3D model…</div>
@@ -319,8 +377,8 @@ function makeLoader() {
       <div class="loader-sub" id="loader-sub">Initializing…</div>
     </div>`;
   document.body.appendChild(root);
-  const fill = root.querySelector('.loader-fill') as HTMLDivElement;
-  const sub  = root.querySelector('#loader-sub') as HTMLDivElement;
+  const fill = root.querySelector(".loader-fill") as HTMLDivElement;
+  const sub = root.querySelector("#loader-sub") as HTMLDivElement;
   return {
     progress(p: number) {
       if (!isFinite(p)) return;
@@ -328,34 +386,21 @@ function makeLoader() {
       fill.style.width = `${pct}%`;
       sub.textContent = pct < 100 ? `Loading… ${pct}%` : `Finalizing…`;
     },
-    done() {
-      root.classList.add('hidden');
-      setTimeout(() => root.remove(), 400);
-    },
-    error(msg: string) {
-      sub.textContent = msg || 'Failed to load model.';
-      setTimeout(() => this.done(), 1200);
-    }
+    done() { root.classList.add("hidden"); setTimeout(() => root.remove(), 400); },
+    error(msg: string) { sub.textContent = msg || "Failed to load model."; setTimeout(() => this.done(), 1200); },
   };
 }
 const loaderUI = makeLoader();
 
-// ---------- Apply texture to the screen material ----------
+/* screen material hookup */
 function applyHTMLTextureToScreen(root: THREE.Object3D) {
   root.traverse((o: any) => {
     if (!o.isMesh) return;
-
     const mats = Array.isArray(o.material) ? o.material.slice() : [o.material];
-    const idx = mats.findIndex((m:any) => (m?.name || '').trim().toLowerCase() === SCREEN_MAT_NAME.toLowerCase());
+    const idx = mats.findIndex((m: any) => (m?.name || "").trim().toLowerCase() === SCREEN_MAT_NAME.toLowerCase());
     if (idx === -1) return;
-
-    // 1) Generate UVs for just this material group + get aspect
     const aspect = setUVsForMaterialGroupAndGetAspect(o.geometry as THREE.BufferGeometry, idx);
-
-    // 2) Resize capture pipeline to match aspect
     resizeScreenCaptureToAspect(aspect);
-
-    // 3) Clone & swap only that sub-material; drive from emissive map
     const baseMat = mats[idx];
     const m = baseMat.clone();
     m.color = new THREE.Color(0x000000);
@@ -364,18 +409,16 @@ function applyHTMLTextureToScreen(root: THREE.Object3D) {
     m.emissiveMap = screenTex;
     m.emissiveIntensity = 1.6;
     m.toneMapped = true;
-    m.side = THREE.DoubleSide; // screens are thin planes
+    m.side = THREE.DoubleSide;
     m.needsUpdate = true;
-
     mats[idx] = m;
     o.material = Array.isArray(o.material) ? mats : mats[0];
-
     o.castShadow = false;
     o.receiveShadow = false;
   });
 }
 
-// ---------- Load GLB ----------
+// load GLB (hero only)
 const gltfLoader = new GLTFLoader();
 gltfLoader.load(
   GLB_URL,
@@ -389,14 +432,19 @@ gltfLoader.load(
     const targetSize = 2.2;
     const scale = targetSize / maxSide;
     model.scale.setScalar(scale);
+
     box.setFromObject(model);
     const center = new THREE.Vector3(); box.getCenter(center);
     model.position.sub(center);
 
+    const sphere = new THREE.Sphere();
+    new THREE.Box3().setFromObject(model).getBoundingSphere(sphere);
+    baseRadius = sphere.radius || 1;
+
     applyHTMLTextureToScreen(model);
     rig.add(model);
 
-    onResize();
+    sizeToHero();
     loaderUI.done();
     animate();
   },
@@ -404,85 +452,48 @@ gltfLoader.load(
   (err) => { console.error("GLB load error", err); loaderUI.error("Failed to load model."); }
 );
 
-// ---------- Scroll-follow keyframes ----------
-const keyframes = [
-  { section: "#home",    pos: new THREE.Vector3(1, 0.5, 2.7), rot: new THREE.Euler(0.0, -0.75, 0.0), scale: 1.15 },
-  { section: "#about",   pos: new THREE.Vector3(1.5, 1.18, 0.4), rot: new THREE.Euler(0.0, -0.25, 0.0), scale: 1.15 },
-  { section: "#inquire", pos: new THREE.Vector3(0.0, -.1, 1.5),  rot: new THREE.Euler(0.0,  0.00, 0.0), scale: 1.9 },
-];
-const sections = keyframes.map(k => document.querySelector(k.section) as HTMLElement);
+// hero pose only
+type Pose = {
+  pos: THREE.Vector3;
+  rot: THREE.Euler;
+  scale: number;
+  lightPos?: THREE.Vector3;
+  shadowOpacity?: number;
+  shadowRadius?: number;
+};
+type Mode = "desktop-xl" | "desktop" | "tablet" | "phone-land" | "phone-port";
+const poses: Record<Mode, Pose> = {
+  "desktop-xl": { pos: new THREE.Vector3(0, 0.8, 2.0), rot: new THREE.Euler(0,-0.5,0), scale: 1.9,  lightPos: new THREE.Vector3(-1.2,6,4), shadowOpacity:.18, shadowRadius:4 },
+  "desktop":    { pos: new THREE.Vector3(1.0, 0.8, 2.0), rot: new THREE.Euler(0,-0.5,0), scale: 1.25, lightPos: new THREE.Vector3(-1.2,6,4), shadowOpacity:.18, shadowRadius:4 },
+  "tablet":     { pos: new THREE.Vector3(0,.3,2.9),      rot: new THREE.Euler(0,0,0),     scale: 1.95, lightPos: new THREE.Vector3(-1.0,5.8,3.6), shadowOpacity:0, shadowRadius:4 },
+  "phone-land": { pos: new THREE.Vector3(0.5,0.7,2.5),   rot: new THREE.Euler(0,-0.35,0), scale: 0, lightPos: new THREE.Vector3(-0.9,5.4,3.0), shadowOpacity:.14, shadowRadius:4 },
+  "phone-port": { pos: new THREE.Vector3(0,.3,2.9),      rot: new THREE.Euler(0,0,0),     scale: 1.4,  lightPos: new THREE.Vector3(-0.9,5.0,2.6), shadowOpacity:.12, shadowRadius:4 },
+};
 
-let sectionTops: number[] = [];
-let currentIndex = 0;
-let isPaging = false;
-let targetIndex = 0;
+// Mobile/stacked behavior under 1500px
+function getMode(): Mode {
+  const w = window.innerWidth;
+  const portrait = window.matchMedia("(orientation: portrait)").matches;
 
-function computeSectionTops() {
-  sectionTops = sections.map(el => el.getBoundingClientRect().top + window.scrollY);
+  if (w >= 1500) return "desktop-xl";
+  if (w >= 1100) return "tablet";                 // earlier “stack” kick-in
+  if (w >= 641)  return portrait ? "phone-port" : "tablet";
+  return portrait ? "phone-port" : "phone-land";
 }
-function closestSectionIndex(y: number) {
-  let min = Infinity, idx = 0;
-  for (let i = 0; i < sectionTops.length; i++) {
-    const d = Math.abs(y - sectionTops[i]);
-    if (d < min) { min = d; idx = i; }
-  }
-  return idx;
+let mode: Mode = getMode();
+let pose: Pose = poses[mode];
+function applyModeIfNeeded() {
+  const m = getMode();
+  if (m !== mode) { mode = m; pose = poses[mode]; }
 }
-function scrollToIndex(i: number) {
-  i = Math.max(0, Math.min(sections.length - 1, i));
-  isPaging = true; targetIndex = i;
-  window.scrollTo({ top: sectionTops[i], behavior: "smooth" });
-}
-let settleCheckId: number | null = null;
-function startSettleWatcher() {
-  if (settleCheckId) return;
-  settleCheckId = window.setInterval(() => {
-    const t = sectionTops[targetIndex];
-    if (Math.abs(window.scrollY - t) < 2) {
-      isPaging = false; currentIndex = targetIndex;
-      clearInterval(settleCheckId!); settleCheckId = null;
-    }
-  }, 30);
-}
+window.addEventListener("resize", applyModeIfNeeded);
+window.addEventListener("orientationchange", () => setTimeout(applyModeIfNeeded, 50));
 
-window.addEventListener("wheel", (e) => {
-  e.preventDefault(); if (isPaging) return;
-  const dir = Math.sign(e.deltaY);
-  if (dir > 0) scrollToIndex(currentIndex + 1);
-  else if (dir < 0) scrollToIndex(currentIndex - 1);
-  startSettleWatcher();
-}, { passive: false });
+const DEFAULT_LIGHT_POS = dir.position.clone();
+const DEFAULT_SHADOW_OPACITY = (ground.material as THREE.ShadowMaterial).opacity;
+const DEFAULT_SHADOW_RADIUS = dir.shadow.radius;
 
-let touchStartY = 0;
-window.addEventListener("touchstart", (e) => (touchStartY = e.touches[0].clientY), { passive: true });
-window.addEventListener("touchend", (e) => {
-  if (isPaging) return;
-  const dy = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(dy) < 40) return;
-  if (dy < 0) scrollToIndex(currentIndex + 1);
-  else scrollToIndex(currentIndex - 1);
-  startSettleWatcher();
-}, { passive: true });
-
-window.addEventListener("keydown", (e) => {
-  if (isPaging) return;
-  if (["ArrowDown","PageDown"," "].includes(e.key)) { e.preventDefault(); scrollToIndex(currentIndex + 1); startSettleWatcher(); }
-  else if (["ArrowUp","PageUp"].includes(e.key))   { e.preventDefault(); scrollToIndex(currentIndex - 1); startSettleWatcher(); }
-});
-document.querySelectorAll('header.nav a[href^="#"]').forEach((a) => {
-  a.addEventListener("click", (ev) => {
-    ev.preventDefault();
-    const id = (ev.currentTarget as HTMLAnchorElement).getAttribute("href")!;
-    const idx = sections.findIndex((s) => "#" + s.id === id);
-    if (idx >= 0) { scrollToIndex(idx); startSettleWatcher(); }
-  });
-});
-
-// ---------- init ----------
-computeSectionTops();
-currentIndex = closestSectionIndex(window.scrollY);
-
-// ---------- animate ----------
+// animate
 function animate() {
   const now = performance.now();
   if (screenRoot && h2c && now - lastCapture > 1000 / SCREEN_FPS) {
@@ -490,44 +501,36 @@ function animate() {
     captureHTMLToCanvas();
   }
 
-  const y = window.scrollY + window.innerHeight * 0.5;
-  const { i, t } = getSegmentAndT(y);
+  const EASE = 0.18;
 
-  const a = keyframes[i], b = keyframes[i + 1];
-  const rigPos = new THREE.Vector3().copy(a.pos).lerp(b.pos, t);
-  rig.position.copy(rigPos);
+  rig.position.lerp(pose.pos, EASE);
 
-  const qA = new THREE.Quaternion().setFromEuler(a.rot);
-  const qB = new THREE.Quaternion().setFromEuler(b.rot);
-  const baseQ = new THREE.Quaternion().copy(qA).slerp(qB, t);
   mouse.x += (targetMouse.x - mouse.x) * TILT_EASE;
   mouse.y += (targetMouse.y - mouse.y) * TILT_EASE;
   const yaw = -mouse.x * MAX_YAW, pitch = mouse.y * MAX_PITCH;
-  const tiltQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, 0));
-  rig.quaternion.copy(baseQ).multiply(tiltQ);
 
-  rig.scale.setScalar(a.scale + (b.scale - a.scale) * t);
+  const baseQ = new THREE.Quaternion().setFromEuler(pose.rot);
+  const tiltQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, 0));
+  rig.quaternion.slerp(baseQ.multiply(tiltQ), EASE);
+
+  const targetS = pose.scale * responsiveScale();
+  rig.scale.x += (targetS - rig.scale.x) * EASE;
+  rig.scale.y += (targetS - rig.scale.y) * EASE;
+  rig.scale.z += (targetS - rig.scale.z) * EASE;
+
+  const lp = pose.lightPos ?? DEFAULT_LIGHT_POS;
+  dir.position.lerp(lp, EASE);
+  const sm = ground.material as THREE.ShadowMaterial;
+  const to = pose.shadowOpacity ?? DEFAULT_SHADOW_OPACITY;
+  sm.opacity += (to - sm.opacity) * EASE;
+  const tr = pose.shadowRadius ?? DEFAULT_SHADOW_RADIUS;
+  dir.shadow.radius += (tr - dir.shadow.radius) * 0.25;
 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
 
-// ---------- helpers ----------
-function clamp01(x: number) { return Math.min(1, Math.max(0, x)); }
-function getSegmentAndT(y: number) {
-  if (y < sectionTops[0]) return { i: 0, t: 0 };
-  for (let i = 0; i < sectionTops.length - 1; i++) {
-    const start = sectionTops[i], end = sectionTops[i + 1];
-    if (y >= start && y < end) return { i, t: clamp01((y - start) / (end - start)) };
-  }
-  return { i: keyframes.length - 2, t: 1 };
-}
-function onResize() {
-  computeSectionTops();
-  currentIndex = closestSectionIndex(window.scrollY);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-window.addEventListener("resize", onResize);
-window.addEventListener("orientationchange", onResize);
+initFeaturePods();
+initPromoAndBand();
+
+

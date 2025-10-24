@@ -2,81 +2,297 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>EchoLink</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Fixed 3D canvas layer -->
-    <div id="stage">
-      <canvas id="webgl"></canvas>
-    </div>
+    <!-- Fixed 3D canvas -->
 
-    <!-- Simple top nav (matches your mock) -->
+    <!-- Top nav -->
     <header class="nav">
       <div class="logo">
-        <img src="./logo512.png" style="width: 50px; height: 50px" />
+        <img src="./logo512.png" width="50" height="50" alt="EchoLink" />
       </div>
       <nav>
         <a href="#home">Home</a>
         <a href="#about">About</a>
-        <a href="#inquire" class="cta">Inquire</a>
+        <a href="#contact" class="cta">Inquire</a>
       </nav>
     </header>
 
-    <!-- Section 1 -->
+    <!-- HERO (3D) -->
     <section id="home" class="panel panel--light">
-      <div class="content">
-        <h1>Meet EchoLink</h1>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation
-        </p>
-        <a class="button" href="#inquire">
-          
-<svg xmlns="http://www.w3.org/2000/svg" id="Outline" fill="white" viewBox="0 0 24 24" width="32" height="32"><path d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"/><path d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"/><circle cx="12" cy="6.5" r="1.5"/></svg>
+      <div class="hero-frame">
+    <div id="stage"><canvas id="webgl"></canvas></div>
 
-          Inquire</a>
+        <div class="content">
+          <h1>Meet EchoLink</h1>
+          <p>
+            Turn missed calls into bookings. EchoLink answers phones 24/7, books
+            or reschedules, handles FAQs, and hands off to staff with full
+            context built for restaurants, clinics, and service businesses.
+          </p>
+          <a class="button" href="#contact">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="white"
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+            >
+              <path
+                d="M12,0A12,12,0,1,0,24,12,12.013,12.013,0,0,0,12,0Zm0,22A10,10,0,1,1,22,12,10.011,10.011,0,0,1,12,22Z"
+              />
+              <path
+                d="M12,10H11a1,1,0,0,0,0,2h1v6a1,1,0,0,0,2,0V12A2,2,0,0,0,12,10Z"
+              />
+              <circle cx="12" cy="6.5" r="1.5" />
+            </svg>
+            Start Your Trial
+          </a>
+        </div>
+
+        <div class="shape shape--one">
+          <!-- keep your SVG shape here -->
+          <svg class="shape-svg" viewBox="0 0 1294 804" aria-hidden="true">
+            <defs>
+              <linearGradient
+                id="shapeOneGrad"
+                x1="643.607"
+                y1="0"
+                x2="643.607"
+                y2="804"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0.543269" stop-color="#1CACF1" />
+                <stop offset="1" stop-color="#10638B" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M560.756 14.6534C567.751 5.42285 578.664 0 590.246 0H777.508C789.98 0 801.612 6.28329 808.451 16.7135L1287.05 746.714C1303.18 771.32 1285.53 804 1256.11 804H37.0676C6.49331 804 -10.8876 769.022 7.57803 744.653L560.756 14.6534Z"
+              fill="url(#shapeOneGrad)"
+              fill-opacity="0.25"
+            />
+          </svg>
+        </div>
       </div>
-      <div class="shape shape--one"></div>
     </section>
 
-    <!-- Section 2 -->
-    <section id="about" class="panel panel--blue">
-      <ul class="stats">
-        <li>
-          <span class="num">25,000</span><span class="label">Weekly Calls</span>
-        </li>
-        <li>
-          <span class="num">10,000</span><span class="label">Active Users</span>
-        </li>
-        <li>
-          <span class="num">100,000</span
-          ><span class="label">Monthly Users</span>
-        </li>
-      </ul>
+    <section id="features" class="section wrap">
+      <div class="podcont" id="podcont">
+        <div class="podsTop">
+          <div class="pod">
+            <div class="circle">
+              <img src="../images/phone.png" />
+              <img
+                src="../images/phone.png"
+                style="position: absolute; filter: blur(3px); z-index: 2"
+              />
+            </div>
+            <div class="pod-content">
+              <h1>Instant Call Answering</h1>
+              <p>
+                Never miss a call. Greets callers, understands intent, and
+                routes to booking, FAQs, or staff handoff with context.
+              </p>
+            </div>
+          </div>
 
-      <div class="content">
-        <h2>About</h2>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris…
-        </p>
+          <div class="podr">
+            <div class="circle">
+              <img src="../images/calendar.png" />
+              <img
+                src="../images/calendar.png"
+                style="position: absolute; filter: blur(2px); z-index: 2"
+              />
+            </div>
+            <div class="pod-content">
+              <h1>Smart Scheduling</h1>
+              <p>
+                Books, reschedules, and cancels in real time—collects name,
+                party size/appointment type, and contact details, then syncs
+                your calendar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="podsBottom">
+          <div class="pod">
+            <div class="circle">
+              <img src="../images/brain.png" />
+              <img
+                src="../images/brain.png"
+                style="position: absolute; filter: blur(2px); z-index: 2"
+              />
+            </div>
+            <div class="pod-content">
+              <h1>FAQ Brain</h1>
+              <p>
+                Answers hours, location, menu/services, insurance and more. Logs
+                common questions to improve scripts and staff training.
+              </p>
+            </div>
+          </div>
+
+          <div class="podr">
+            <div class="circle">
+              <img src="../images/light.png" />
+              <img
+                src="../images/light.png"
+                style="position: absolute; filter: blur(2px); z-index: 2"
+              />
+            </div>
+            <div class="pod-content">
+              <h1>Escalation & Summaries</h1>
+              <p>
+                Transfers tough calls to staff instantly and posts an AI summary
+                with caller details to your dashboard/CRM.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="shape shape--two"></div>
     </section>
 
-    <!-- Section 3 (model gets BIG here) -->
-    <section id="inquire" class="panel panel--dark">
-      <div class="content content--center">
-        <h2>Let’s Talk</h2>
-        <p>
-          We’ll put a form here later. For now, enjoy the giant POS screen 😄
-        </p>
+    <section class="promo">
+      <div class="promo-card" id="bigCard">
+        <div class="promo-copy">
+          <p>
+            EchoLink converts phone traffic into confirmed bookings. 24/7
+            coverage, accurate data capture, and zero hold music—so your team
+            can focus on service, not voicemail.
+          </p>
+          <div class="promo-actions">
+            <a class="button--small" href="#contact">Inquire</a>
+          </div>
+        </div>
+        <div class="promo-shot" alt=""></div>
       </div>
     </section>
+
+    <section id="about" class="band">
+      <div class="band-inner">
+        <div class="band-copy">
+          <h2>AI Phone Agent for Bookings & FAQs</h2>
+          <p>
+            Launch with phone-first automation: answer calls,
+            book/reschedule/cancel, handle FAQs, and escalate when needed.
+            multichannel messaging, deep integrations, and analytics that help
+            you staff smarter.
+          </p>
+          <a class="ghost" id="goStore" href="#contact">Inquire</a>
+
+          <div class="band-grid">
+            <div class="grid-item" id="g1">
+              <h4>Phone Agent</h4>
+              <p>
+                Call answering, bookings/reschedules/cancels, FAQ handling,
+                intelligent handoff, and AI call summaries.
+              </p>
+              <a class="grid-link" href="#contact">Start Trial →</a>
+            </div>
+            <div class="grid-item" id="g2">
+              <h4>Multichannel</h4>
+              <p>
+                SMS, WhatsApp, and web chat so guests can book or ask questions
+                anywhere. Unified transcript & history.
+              </p>
+              <a class="grid-link" href="#contact">Join Waitlist →</a>
+            </div>
+            <div class="grid-item" id="g3">
+              <h4>Integrations</h4>
+              <p>
+                Calendar (Google/Outlook/Cal.com), POS/CRM/EMR sync, contact
+                enrichment, and staff notifications.
+              </p>
+              <a class="grid-link" href="#contact">See Integrations →</a>
+            </div>
+            <div class="grid-item" id="g4">
+              <h4>Analytics & Admin</h4>
+              <p>
+                Dashboard, FAQ analytics, outcome metrics, and a training studio
+                to tune responses and track quality.
+              </p>
+              <a class="grid-link" href="#contact">View Roadmap →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="band-shot">
+          <img src="/images/promo-shot.png" alt="EchoLink dashboard" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT (2D) -->
+    <section id="contact" class="wrap contact">
+      <div class="contact-left">
+        <h2>Get Started</h2>
+        <p>
+          Tell us a bit about your business and we’ll help you launch your AI
+          phone agent.
+        </p>
+        <ul class="contact-list">
+          <li>
+            <h4>Sales</h4>
+            <p>Questions about plans or pilots?</p>
+            <strong>sales@echolinks.net</strong>
+          </li>
+          <li>
+            <h4>Support</h4>
+            <p>Mon–Fri, 9am–5pm</p>
+            <strong>+1 (975) 355-5234</strong>
+          </li>
+          <li>
+            <h4>Partnerships</h4>
+            <p>Integrations & referrals</p>
+            <strong>partners@echolinks.net</strong>
+          </li>
+          <li>
+            <h4>Media</h4>
+            <p>Press & speaking</p>
+            <strong>press@echolinks.net</strong>
+          </li>
+        </ul>
+      </div>
+
+      <form class="contact-card">
+        <h3>Start a Pilot</h3>
+        <div class="grid-2">
+          <label
+            >First name <span style="color: red">*</span><input required
+          /></label>
+          <label
+            >Last name <span style="color: red">*</span><input required
+          /></label>
+        </div>
+        <label
+          >Work email <span style="color: red">*</span
+          ><input type="email" required
+        /></label>
+        <label
+          >What would you like to automate first?
+          <span style="color: red">*</span
+          ><textarea
+            required
+            rows="6"
+            placeholder="e.g., bookings, reschedules, hours, insurance, menu, etc."
+          ></textarea>
+        </label>
+        <label class="agree"
+          ><input type="checkbox" required /> I agree to the Privacy
+          Policy.</label
+        >
+        <button type="submit" class="button button--block">
+          Get Early Access
+        </button>
+      </form>
+    </section>
+
+    <!-- end of the 3D area sentinel -->
+    <div id="after-3d"></div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
