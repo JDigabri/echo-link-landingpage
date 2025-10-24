@@ -450,13 +450,13 @@ header.nav nav a.cta {
 }
 .grid-link {
   margin-top: 15px;
-  color: #bdcffc;
+  color: #54c2ff;
   text-decoration: none;
   font-weight: 200;
   transition: 0.1s;
 }
 .grid-link:hover {
-  color: #9e77da;
+  color: #2f6f8c;
 }
 
 .band-shot {
@@ -927,7 +927,7 @@ header.nav nav a.cta {
 #features .pod-content {
   width: 390px;
   color: #000000;
-  font-family: inter;
+  font-family: Inter, system-ui, sans-serif;
 }
 #features .pod-content h1 {
   font-size: 16px;
